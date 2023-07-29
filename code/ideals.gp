@@ -7,8 +7,7 @@ main functions
 ideal2label(nf,x)
 label2ideal(nf,lab)
 
-nbidealsprimepowernorm(nf,p,k,dec = idealprimedec(nf,p))
-idealsprimepowernorm(nf,p,k,dec = idealprimedecsorted(nf,p))
+nbidealsofnorm(nf,N)
 idealsofnorm(nf,N,Lp=[],Ldec=[])
 idealsupto(nf,x)
 
@@ -415,19 +414,31 @@ label2ideal(nf,lab) =
     lab \= tot
   );
   res;
-}
+};
 
 \\valid label
 isvalidideallabel(nf,N,lab) =
 {
   lab>0 && lab <= nbidealsofnorm(nf,N);
-}
+};
 
 \\next label
-nextideallabel(nf,N,lab) = 0;
+nextideallabel(nf,N,lab) =
+{
+  if(isvalidideallabel(nf,N,lab+1),return([N,lab+1]));
+  N++;
+  while(!isvalidideallabel(nf,N,1),N++);
+  [N,1]
+};
 
 \\nextideal
-nextideal(nf,a) = 0;
+nextideal(nf,a) =
+{
+  my(N,lab);
+  [N,lab] = ideal2label(nf,a);
+  [N,lab] = nextideallabel(nf,N,lab);
+  label2ideal(nf,[N,lab])
+};
 
 \\given a ideal of nf
 \\return matrix of the standard basis of a
@@ -494,7 +505,7 @@ stdgenprettier(nf,N,g,stdB=stdbasis(nf)) =
 
 idealstdgen(nf,a,stdB=stdbasis(nf),pretty=1) =
 {
-  my(N,faN,y);
+  my(N,faN,y,pr,g);
   a = idealhnf(nf,a);
   N = a[1,1];
   faN = idealfactor(nf,N);
